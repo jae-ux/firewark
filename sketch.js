@@ -1,4 +1,3 @@
-
 let fireworks = [];
 let gravity;
 let started = false;
@@ -21,7 +20,6 @@ function setup() {
 }
 
 function draw() {
-  
   colorMode(RGB);
   background(0, 0, 0, 30);
 
@@ -46,11 +44,11 @@ function draw() {
 function touchStarted() {
   userStartAudio();
 
-  // Start 20 second timer for the button reveal
+  // Show button after 10 seconds (was 20000)
   setTimeout(() => {
     const btn = document.getElementById('surpriseBtn');
     if (btn) btn.style.display = 'block';
-  }, 20000);
+  }, 10000); // 10 seconds
 
   return false;
 }
