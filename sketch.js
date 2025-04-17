@@ -58,7 +58,7 @@ function touchStarted() {
 class Firework {
   constructor() {
     this.hu = random(360);
-    this.firework = new Particle(random(width), height, this.hu, true);
+    this.firework = new Particle(random(width), height, this.hu, true, null, true);
     this.exploded = false;
     this.particles = [];
   }
@@ -93,29 +93,35 @@ class Firework {
       const angle = map(i, 0, num, 0, TWO_PI);
       const mag = random(2, 7);
       const vel = p5.Vector.fromAngle(angle).mult(mag);
-      this.particles.push(new Particle(this.firework.pos.x, this.firework.pos.y, this.hu, false, vel));
+      this.particles.push(new Particle(this.firework.pos.x, this.firework.pos.y, this.hu, false, vel, false));
     }
   }
 
   show() {
+    if (!this.firework && !this.isFlash) {
+      noStroke();
+      fill(this.hu, 255, 255, this.lifespan / 4);
+      ellipse(this.pos.x, this.pos.y, 4);
+    }
     if (!this.exploded) this.firework.show();
     for (let p of this.particles) p.show();
   }
 }
 
 class Particle {
-  constructor(x, y, hu, firework, vel = null) {
+  constructor(x, y, hu, firework, vel = null, isFlash = false) {
     this.pos = createVector(x, y);
     this.prevPos = this.pos.copy();
     this.hu = hu;
     this.firework = firework;
+    this.isFlash = isFlash;
     this.lifespan = 255;
     this.acc = createVector(0, 0);
     if (firework) {
-      this.vel = createVector(0, random(-12, -8));
+      this.vel = createVector(0, random(-18, -12));
     } else {
-      this.vel = vel || p5.Vector.random2D().mult(random(2, 6));
-      this.drag = random(0.91, 0.95);
+      this.vel = vel || p5.Vector.random2D().mult(random(1.5, 6));
+      this.drag = random(0.88, 0.94);
     }
   }
 
@@ -139,6 +145,11 @@ class Particle {
   }
 
   show() {
+    if (!this.firework && !this.isFlash) {
+      noStroke();
+      fill(this.hu, 255, 255, this.lifespan / 4);
+      ellipse(this.pos.x, this.pos.y, 4);
+    }
     colorMode(HSB);
     strokeWeight(this.firework ? 2 : 1);
     stroke(this.hu, 255, 255, this.lifespan);
