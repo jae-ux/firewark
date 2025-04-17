@@ -40,7 +40,7 @@ function draw() {
 function touchStarted() {
   if (!started) {
     started = true;
-    userStartAudio();
+    userStartAudio(); // unlock sound on mobile
 
     setTimeout(() => {
       const btn = document.getElementById('surpriseBtn');
@@ -58,7 +58,7 @@ function touchStarted() {
 class Firework {
   constructor() {
     this.hu = random(360);
-    this.firework = new Particle(random(width), height, this.hu, true, null);
+    this.firework = new Particle(random(width), height, this.hu, true);
     this.exploded = false;
     this.particles = [];
   }
@@ -95,11 +95,6 @@ class Firework {
       const vel = p5.Vector.fromAngle(angle).mult(mag);
       this.particles.push(new Particle(this.firework.pos.x, this.firework.pos.y, this.hu, false, vel));
     }
-    // Flash burst
-    for (let i = 0; i < 20; i++) {
-      const flashVel = p5.Vector.random2D().mult(random(1, 3));
-      this.particles.push(new Particle(this.firework.pos.x, this.firework.pos.y, this.hu, false, flashVel, true));
-    }
   }
 
   show() {
@@ -109,17 +104,16 @@ class Firework {
 }
 
 class Particle {
-  constructor(x, y, hu, firework, vel = null, flash = false) {
+  constructor(x, y, hu, firework, vel = null) {
     this.pos = createVector(x, y);
     this.prevPos = this.pos.copy();
     this.hu = hu;
     this.firework = firework;
     this.lifespan = 255;
     this.acc = createVector(0, 0);
-    this.flash = flash;
 
     if (firework) {
-      this.vel = createVector(0, random(-18, -13));
+      this.vel = createVector(0, random(-28, -20));
     } else {
       this.vel = vel || p5.Vector.random2D().mult(random(1.5, 6));
       this.drag = random(0.88, 0.95);
@@ -134,7 +128,7 @@ class Particle {
     this.prevPos = this.pos.copy();
     if (!this.firework) {
       this.vel.mult(this.drag);
-      this.lifespan -= this.flash ? 8 : 4;
+      this.lifespan -= 2.5;
     }
     this.vel.add(this.acc);
     this.pos.add(this.vel);
@@ -149,21 +143,14 @@ class Particle {
     colorMode(HSB);
 
     if (!this.firework) {
-      strokeWeight(this.flash ? 4 : 1.2);
-      stroke(this.hu, 100, this.flash ? 255 : 200, this.lifespan);
-    } else {
-      strokeWeight(2);
-      stroke(this.hu, 255, 255);
-    }
-
-    line(this.prevPos.x, this.prevPos.y, this.pos.x, this.pos.y);
-
-    // Soft glow for flower particles
-    if (!this.firework && !this.flash) {
       noStroke();
-      fill(this.hu, 255, 255, this.lifespan / 5);
-      ellipse(this.pos.x, this.pos.y, 6);
+      fill(this.hu, 255, 255, this.lifespan / 3);
+      ellipse(this.pos.x, this.pos.y, 8 + random(-2, 2));
     }
+
+    strokeWeight(this.firework ? 2 : 1);
+    stroke(this.hu, 255, 255, this.lifespan);
+    line(this.prevPos.x, this.prevPos.y, this.pos.x, this.pos.y);
   }
 }
 
@@ -174,7 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (surpriseTriggered) return;
       surpriseTriggered = true;
 
-      document.getElementById('message').classList.add('show');
+      document.getElementById('message')?.classList.add('show');
       loveTrack.play();
       for (let i = 0; i < 5; i++) {
         fireworks.push(new Firework());
