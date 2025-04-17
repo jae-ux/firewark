@@ -58,7 +58,7 @@ function touchStarted() {
 class Firework {
   constructor() {
     this.hu = random(360);
-    this.firework = new Particle(random(width), height, this.hu, true, null, true);
+    this.firework = new Particle(random(width), height, this.hu, true, null);
     this.exploded = false;
     this.particles = [];
   }
@@ -90,38 +90,39 @@ class Firework {
   explode() {
     let num = int(random(80, 150));
     for (let i = 0; i < num; i++) {
-      const angle = map(i, 0, num, 0, TWO_PI);
-      const mag = random(2, 7);
+      const angle = random(TWO_PI);
+      const mag = random(2, 6);
       const vel = p5.Vector.fromAngle(angle).mult(mag);
-      this.particles.push(new Particle(this.firework.pos.x, this.firework.pos.y, this.hu, false, vel, false));
+      this.particles.push(new Particle(this.firework.pos.x, this.firework.pos.y, this.hu, false, vel));
+    }
+    // Flash burst
+    for (let i = 0; i < 20; i++) {
+      const flashVel = p5.Vector.random2D().mult(random(1, 3));
+      this.particles.push(new Particle(this.firework.pos.x, this.firework.pos.y, this.hu, false, flashVel, true));
     }
   }
 
   show() {
-    if (!this.firework && !this.isFlash) {
-      noStroke();
-      fill(this.hu, 255, 255, this.lifespan / 4);
-      ellipse(this.pos.x, this.pos.y, 4);
-    }
     if (!this.exploded) this.firework.show();
     for (let p of this.particles) p.show();
   }
 }
 
 class Particle {
-  constructor(x, y, hu, firework, vel = null, isFlash = false) {
+  constructor(x, y, hu, firework, vel = null, flash = false) {
     this.pos = createVector(x, y);
     this.prevPos = this.pos.copy();
     this.hu = hu;
     this.firework = firework;
-    this.isFlash = isFlash;
     this.lifespan = 255;
     this.acc = createVector(0, 0);
+    this.flash = flash;
+
     if (firework) {
-      this.vel = createVector(0, random(-18, -12));
+      this.vel = createVector(0, random(-18, -13));
     } else {
       this.vel = vel || p5.Vector.random2D().mult(random(1.5, 6));
-      this.drag = random(0.88, 0.94);
+      this.drag = random(0.88, 0.95);
     }
   }
 
@@ -133,7 +134,7 @@ class Particle {
     this.prevPos = this.pos.copy();
     if (!this.firework) {
       this.vel.mult(this.drag);
-      this.lifespan -= 4;
+      this.lifespan -= this.flash ? 8 : 4;
     }
     this.vel.add(this.acc);
     this.pos.add(this.vel);
@@ -145,15 +146,24 @@ class Particle {
   }
 
   show() {
-    if (!this.firework && !this.isFlash) {
-      noStroke();
-      fill(this.hu, 255, 255, this.lifespan / 4);
-      ellipse(this.pos.x, this.pos.y, 4);
-    }
     colorMode(HSB);
-    strokeWeight(this.firework ? 2 : 1);
-    stroke(this.hu, 255, 255, this.lifespan);
+
+    if (!this.firework) {
+      strokeWeight(this.flash ? 4 : 1.2);
+      stroke(this.hu, 100, this.flash ? 255 : 200, this.lifespan);
+    } else {
+      strokeWeight(2);
+      stroke(this.hu, 255, 255);
+    }
+
     line(this.prevPos.x, this.prevPos.y, this.pos.x, this.pos.y);
+
+    // Soft glow for flower particles
+    if (!this.firework && !this.flash) {
+      noStroke();
+      fill(this.hu, 255, 255, this.lifespan / 5);
+      ellipse(this.pos.x, this.pos.y, 6);
+    }
   }
 }
 
