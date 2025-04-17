@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Fireworks for Sarah</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/addons/p5.sound.min.js"></script>
@@ -12,56 +12,40 @@
       margin: 0;
       padding: 0;
       overflow: hidden;
+      touch-action: none;
+      user-select: none;
       background: black;
-      width: 100%;
-      height: 100%;
     }
-
+    canvas {
+      display: block;
+    }
     #surpriseBtn {
-      display: block !important;
-      opacity: 1;
-      position: fixed;
-      z-index: 1000;
-      background: hotpink;
-      color: white;
-      border: none;
-      border-radius: 6px;
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
       padding: 12px 20px;
+      background: #ff69b4;
+      border: none;
+      border-radius: 8px;
+      color: white;
       font-size: 16px;
-      box-shadow: 0 0 10px hotpink;
+      cursor: pointer;
+      box-shadow: 0 0 10px #ff69b4;
+      z-index: 10;
+      display: none;
     }
-
-    @media only screen and (max-width: 768px) {
-      #surpriseBtn {
-        bottom: 50%;
-        right: 50%;
-        transform: translate(50%, 50%);
-      }
-    }
-
-    @media only screen and (min-width: 769px) {
-      #surpriseBtn {
-        bottom: 20px;
-        right: 20px;
-        transform: none;
-      }
-    }
-
     #message {
-      position: fixed;
+      position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      font-size: 28px;
+      color: #fff;
+      font-size: 32px;
       font-family: 'Courier New', monospace;
-      color: white;
       opacity: 0;
       transition: opacity 1s ease;
-      z-index: 999;
-      text-align: center;
-      max-width: 90%;
+      z-index: 9;
     }
-
     #message.show {
       opacity: 1;
     }
