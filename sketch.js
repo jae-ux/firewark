@@ -43,13 +43,6 @@ function draw() {
 
 function touchStarted() {
   userStartAudio();
-
-  // Show button after 10 seconds (was 20000)
-  setTimeout(() => {
-    const btn = document.getElementById('surpriseBtn');
-    if (btn) btn.style.display = 'block';
-  }, 10000); // 10 seconds
-
   return false;
 }
 
@@ -61,8 +54,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const btn = document.getElementById('surpriseBtn');
   if (btn) {
     btn.addEventListener('click', () => {
+      if (surpriseTriggered) return;
       surpriseTriggered = true;
-      document.getElementById('message').classList.add('show');
+      document.getElementById('message')?.classList.add('show');
       if (loveTrack && loveTrack.isLoaded()) {
         loveTrack.play();
       }
