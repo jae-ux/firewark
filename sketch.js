@@ -2,25 +2,30 @@
 let fireworks = [];
 let gravity;
 let started = false;
-let explosionSound, loveTrack;
+let explosionSound;
+let loveTrack;
 let surpriseTriggered = false;
 
 function preload() {
-  explosionSound = loadSound('firework-explosion.mp3');
-  loveTrack = loadSound('careless-whisper.mp3');
+  soundFormats('mp3');
+  explosionSound = loadSound('firework-explosion.mp3', () => {}, () => {});
+  loveTrack = loadSound('careless-whisper.mp3', () => {}, () => {});
 }
 
 function setup() {
+  started = true;
   createCanvas(windowWidth, windowHeight);
   colorMode(HSB);
-  gravity = createVector(0, 0.15);
+  gravity = createVector(0, 0.13);
   background(0);
 }
 
 function draw() {
+  
+  colorMode(RGB);
   background(0, 0, 0, 30);
 
-  if (random(1) < 0.02 && started) {
+  if (random(1) < 0.025) {
     fireworks.push(new Firework());
   }
 
@@ -39,21 +44,38 @@ function draw() {
 }
 
 function touchStarted() {
-  if (!started) {
-    started = true;
-    userStartAudio();
-    setTimeout(() => {
-      const btn = document.getElementById('surpriseBtn');
-      if (btn) {
-        btn.style.display = 'block';
-        setTimeout(() => {
-          btn.style.opacity = 1;
-        }, 50);
-      }
-    }, 10000);
-  }
+  userStartAudio();
+
+  // Start 20 second timer for the button reveal
+  setTimeout(() => {
+    const btn = document.getElementById('surpriseBtn');
+    if (btn) btn.style.display = 'block';
+  }, 20000);
+
   return false;
 }
+
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const btn = document.getElementById('surpriseBtn');
+  if (btn) {
+    btn.addEventListener('click', () => {
+      surpriseTriggered = true;
+      document.getElementById('message').classList.add('show');
+      if (loveTrack && loveTrack.isLoaded()) {
+        loveTrack.play();
+      }
+      setTimeout(() => {
+        for (let i = 0; i < 5; i++) {
+          fireworks.push(new Firework(true));
+        }
+      }, 1000);
+    });
+  }
+});
 
 class Firework {
   constructor() {
@@ -71,10 +93,12 @@ class Firework {
     if (!this.exploded) {
       this.firework.applyForce(gravity);
       this.firework.update();
-      if (this.firework.vel.y >= 0) {
+      if (this.firework.vel.y >= random(-2, 0)) {
         this.exploded = true;
         this.explode();
-        explosionSound.play();
+        if (explosionSound && explosionSound.isLoaded()) {
+          explosionSound.play();
+        }
       }
     }
 
@@ -88,11 +112,14 @@ class Firework {
   }
 
   explode() {
-    for (let i = 0; i < 100; i++) {
-      const angle = random(TWO_PI);
-      const speed = random(1.5, 4);
-      const vel = p5.Vector.fromAngle(angle).mult(speed);
-      this.particles.push(new Particle(this.firework.pos.x, this.firework.pos.y, this.hu, false, vel));
+    let num = int(random(70, 130));
+    for (let i = 0; i < num; i++) {
+      const angle = map(i, 0, num, 0, TWO_PI);
+      const mag = random(3, 7);
+      const vel = p5.Vector.fromAngle(angle).mult(mag);
+      const hueShift = surpriseTriggered ? 300 : 0;
+      const p = new Particle(this.firework.pos.x, this.firework.pos.y, (this.hu + hueShift) % 360, false, vel);
+      this.particles.push(p);
     }
   }
 
@@ -110,11 +137,12 @@ class Particle {
     this.firework = firework;
     this.lifespan = 255;
     this.acc = createVector(0, 0);
+
     if (firework) {
-      this.vel = createVector(0, random(-15, -9));
+      this.vel = createVector(0, random(-13, -10));
     } else {
-      this.vel = vel || p5.Vector.random2D().mult(random(1.5, 4));
-      this.drag = random(0.88, 0.95);
+      this.vel = vel || p5.Vector.random2D().mult(random(3, 8));
+      this.drag = random(0.91, 0.95);
     }
   }
 
@@ -126,7 +154,7 @@ class Particle {
     this.prevPos = this.pos.copy();
     if (!this.firework) {
       this.vel.mult(this.drag);
-      this.lifespan -= 2;
+      this.lifespan -= map(this.vel.mag(), 0, 5, 0.5, 1.5);
     }
     this.vel.add(this.acc);
     this.pos.add(this.vel);
@@ -134,38 +162,19 @@ class Particle {
   }
 
   done() {
-    return this.lifespan <= 0;
+    return this.lifespan < 10;
   }
 
   show() {
     colorMode(HSB);
+    strokeWeight(this.firework ? 1.5 : 0.8);
+    stroke(this.hu, 100, 255, this.lifespan);
+    line(this.prevPos.x, this.prevPos.y, this.pos.x, this.pos.y);
 
     if (!this.firework) {
-      strokeWeight(1);
-      stroke(this.hu, 255, 255, this.lifespan);
-      line(this.prevPos.x, this.prevPos.y, this.pos.x, this.pos.y);
       noStroke();
-      fill(this.hu, 255, 255, this.lifespan / 4);
-      ellipse(this.pos.x, this.pos.y, 3);
-    } else {
-      strokeWeight(2);
-      stroke(this.hu, 255, 255);
-      point(this.pos.x, this.pos.y);
+      fill(this.hu, 100, 255, this.lifespan / 5);
+      ellipse(this.pos.x, this.pos.y, 6);
     }
   }
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-  const btn = document.getElementById('surpriseBtn');
-  if (btn) {
-    btn.addEventListener('click', () => {
-      if (surpriseTriggered) return;
-      surpriseTriggered = true;
-      document.getElementById('message')?.classList.add('show');
-      loveTrack.play();
-      for (let i = 0; i < 5; i++) {
-        fireworks.push(new Firework());
-      }
-    });
-  }
-});
