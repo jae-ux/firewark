@@ -1,3 +1,4 @@
+
 let fireworks = [];
 let gravity;
 let started = false;
@@ -20,6 +21,7 @@ function setup() {
 }
 
 function draw() {
+  
   colorMode(RGB);
   background(0, 0, 0, 30);
 
@@ -43,6 +45,13 @@ function draw() {
 
 function touchStarted() {
   userStartAudio();
+
+  // Start 20 second timer for the button reveal
+  setTimeout(() => {
+    const btn = document.getElementById('surpriseBtn');
+    if (btn) btn.style.display = 'block';
+  }, 20000);
+
   return false;
 }
 
@@ -54,9 +63,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const btn = document.getElementById('surpriseBtn');
   if (btn) {
     btn.addEventListener('click', () => {
-      if (surpriseTriggered) return;
       surpriseTriggered = true;
-      document.getElementById('message')?.classList.add('show');
+      document.getElementById('message').classList.add('show');
       if (loveTrack && loveTrack.isLoaded()) {
         loveTrack.play();
       }
