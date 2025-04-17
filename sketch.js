@@ -1,3 +1,4 @@
+
 let fireworks = [];
 let gravity;
 let started = false;
@@ -12,14 +13,14 @@ function preload() {
 function setup() {
   createCanvas(windowWidth, windowHeight);
   colorMode(HSB);
-  gravity = createVector(0, 0.2);
+  gravity = createVector(0, 0.15);
   background(0);
 }
 
 function draw() {
-  background(0, 0, 0, 25);
+  background(0, 0, 0, 30);
 
-  if (random(1) < 0.03 && started) {
+  if (random(1) < 0.02 && started) {
     fireworks.push(new Firework());
   }
 
@@ -41,7 +42,6 @@ function touchStarted() {
   if (!started) {
     started = true;
     userStartAudio();
-
     setTimeout(() => {
       const btn = document.getElementById('surpriseBtn');
       if (btn) {
@@ -58,7 +58,7 @@ function touchStarted() {
 class Firework {
   constructor() {
     this.hu = random(360);
-    this.firework = new Particle(random(width), height, this.hu, true);
+    this.firework = new Particle(random(width * 0.2, width * 0.8), height, this.hu, true);
     this.exploded = false;
     this.particles = [];
   }
@@ -88,11 +88,10 @@ class Firework {
   }
 
   explode() {
-    let num = int(random(80, 150));
-    for (let i = 0; i < num; i++) {
+    for (let i = 0; i < 100; i++) {
       const angle = random(TWO_PI);
-      const mag = random(1, 4); // smaller explosion
-      const vel = p5.Vector.fromAngle(angle).mult(mag);
+      const speed = random(1.5, 4);
+      const vel = p5.Vector.fromAngle(angle).mult(speed);
       this.particles.push(new Particle(this.firework.pos.x, this.firework.pos.y, this.hu, false, vel));
     }
   }
@@ -111,11 +110,10 @@ class Particle {
     this.firework = firework;
     this.lifespan = 255;
     this.acc = createVector(0, 0);
-
     if (firework) {
-      this.vel = createVector(0, random(-20, -13)); // not too high
+      this.vel = createVector(0, random(-15, -9));
     } else {
-      this.vel = vel || p5.Vector.random2D().mult(random(1, 4));
+      this.vel = vel || p5.Vector.random2D().mult(random(1.5, 4));
       this.drag = random(0.88, 0.95);
     }
   }
@@ -128,7 +126,7 @@ class Particle {
     this.prevPos = this.pos.copy();
     if (!this.firework) {
       this.vel.mult(this.drag);
-      this.lifespan -= 2.5;
+      this.lifespan -= 2;
     }
     this.vel.add(this.acc);
     this.pos.add(this.vel);
@@ -136,25 +134,23 @@ class Particle {
   }
 
   done() {
-    return this.lifespan < 0;
+    return this.lifespan <= 0;
   }
 
   show() {
     colorMode(HSB);
 
-    // glow trail for explosion particles
     if (!this.firework) {
       strokeWeight(1);
       stroke(this.hu, 255, 255, this.lifespan);
       line(this.prevPos.x, this.prevPos.y, this.pos.x, this.pos.y);
-
       noStroke();
       fill(this.hu, 255, 255, this.lifespan / 4);
-      ellipse(this.pos.x, this.pos.y, 4);
+      ellipse(this.pos.x, this.pos.y, 3);
     } else {
       strokeWeight(2);
       stroke(this.hu, 255, 255);
-      line(this.prevPos.x, this.prevPos.y, this.pos.x, this.pos.y);
+      point(this.pos.x, this.pos.y);
     }
   }
 }
@@ -165,7 +161,6 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', () => {
       if (surpriseTriggered) return;
       surpriseTriggered = true;
-
       document.getElementById('message')?.classList.add('show');
       loveTrack.play();
       for (let i = 0; i < 5; i++) {
