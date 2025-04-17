@@ -40,7 +40,7 @@ function draw() {
 function touchStarted() {
   if (!started) {
     started = true;
-    userStartAudio(); // unlock sound on mobile
+    userStartAudio();
 
     setTimeout(() => {
       const btn = document.getElementById('surpriseBtn');
@@ -91,7 +91,7 @@ class Firework {
     let num = int(random(80, 150));
     for (let i = 0; i < num; i++) {
       const angle = random(TWO_PI);
-      const mag = random(2, 6);
+      const mag = random(1, 4); // smaller explosion
       const vel = p5.Vector.fromAngle(angle).mult(mag);
       this.particles.push(new Particle(this.firework.pos.x, this.firework.pos.y, this.hu, false, vel));
     }
@@ -113,9 +113,9 @@ class Particle {
     this.acc = createVector(0, 0);
 
     if (firework) {
-      this.vel = createVector(0, random(-28, -20));
+      this.vel = createVector(0, random(-20, -13)); // not too high
     } else {
-      this.vel = vel || p5.Vector.random2D().mult(random(1.5, 6));
+      this.vel = vel || p5.Vector.random2D().mult(random(1, 4));
       this.drag = random(0.88, 0.95);
     }
   }
@@ -142,15 +142,20 @@ class Particle {
   show() {
     colorMode(HSB);
 
+    // glow trail for explosion particles
     if (!this.firework) {
-      noStroke();
-      fill(this.hu, 255, 255, this.lifespan / 3);
-      ellipse(this.pos.x, this.pos.y, 8 + random(-2, 2));
-    }
+      strokeWeight(1);
+      stroke(this.hu, 255, 255, this.lifespan);
+      line(this.prevPos.x, this.prevPos.y, this.pos.x, this.pos.y);
 
-    strokeWeight(this.firework ? 2 : 1);
-    stroke(this.hu, 255, 255, this.lifespan);
-    line(this.prevPos.x, this.prevPos.y, this.pos.x, this.pos.y);
+      noStroke();
+      fill(this.hu, 255, 255, this.lifespan / 4);
+      ellipse(this.pos.x, this.pos.y, 4);
+    } else {
+      strokeWeight(2);
+      stroke(this.hu, 255, 255);
+      line(this.prevPos.x, this.prevPos.y, this.pos.x, this.pos.y);
+    }
   }
 }
 
